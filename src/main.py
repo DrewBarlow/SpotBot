@@ -7,6 +7,15 @@ from os import getenv, listdir
 load_dotenv()
 TOKEN: str = str(getenv("SPOTBOT_TOKEN"))
 
+async def load_cogs(bot: Bot) -> None:
+    for fname in listdir("./cogs"):
+        if fname.endswith(".py"):
+            no_ext: str = fname[:-3]
+            await bot.load_extension(f"cogs.{no_ext}")
+            print(f"Loaded Cog: {no_ext}.")
+
+    return
+
 async def main() -> None:
     intents: Intents = Intents.default()
     intents.message_content = True
@@ -16,11 +25,7 @@ async def main() -> None:
     async def on_ready() -> None:
         print("Bot running.")
 
-    async def load_cogs() -> None:
-        for fname in listdir("./cogs"):
-            if fname.endswith(".py"):
-                await bot.load_extension(f"cogs.{fname[:-3]}")
-
+    await load_cogs(bot)
     await bot.start(TOKEN)
 
 if __name__ == "__main__":
