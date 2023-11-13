@@ -1,24 +1,28 @@
-from discord import Client, Intents
+from asyncio import run
+from discord import Intents
+from discord.ext.commands import Bot
 from dotenv import load_dotenv
-from logging import FileHandler
-from os import getenv
+from os import getenv, listdir
 
 load_dotenv()
 TOKEN: str = str(getenv("SPOTBOT_TOKEN"))
 
-def main() -> None:
+async def main() -> None:
     intents: Intents = Intents.default()
     intents.message_content = True
-    client: Client = Client(intents=intents)
+    bot: Bot = Bot(command_prefix='!', intents=intents)
 
-    handler: FileHandler = FileHandler(filename="SpotBot.log", encoding="utf-8", mode='a')
-
-    @client.event
+    @bot.event
     async def on_ready() -> None:
         print("Bot running.")
 
-    client.run(TOKEN, log_handler=handler)
+    async def load_cogs() -> None:
+        for fname in listdir("./cogs"):
+            if fname.endswith(".py"):
+                await bot.load_extension(f"cogs.{fname[:-3]}")
+
+    await bot.start(TOKEN)
 
 if __name__ == "__main__":
-    main() 
+    run(main())
 
