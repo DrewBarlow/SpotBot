@@ -24,6 +24,7 @@ class SpotifyInteraction():
         if weekly_playlist:
             playlist_name: str = weekly_playlist["name"]
             playlist_image_url: str = weekly_playlist["images"][0]["url"]
+
             weekly_playlist_info = (playlist_name, playlist_image_url)
 
         return weekly_playlist_info
@@ -41,6 +42,7 @@ class SpotifyInteraction():
                 track_name: str = track["track"]["name"]
                 artist_name: str = track["track"]["artists"][0]["name"]
                 album_cover_url: str = track["track"]["album"]["images"][0]["url"]
+
                 tracks.append((track_name, artist_name, album_cover_url))
 
         return tracks
