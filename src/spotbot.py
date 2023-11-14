@@ -1,19 +1,16 @@
 from __future__ import annotations
-from asyncio import wait
 from discord.ext import commands
 from discord import app_commands
 from os import getenv
 from spotifyinteraction import SpotifyInteraction
-# from winnermodal import WinnerModal
 from typing import Optional
 import discord
 
 class SpotBot(commands.Cog, name="spotbot"):
-    __debug_on: bool = bool(int(getenv("DEBUG")))
     def __init__(self: SpotBot, bot: commands.Bot) -> None:
         self._bot: commands.Bot = bot
         self._spotify: SpotifyInteraction = SpotifyInteraction()
-        self._votes: dict[discord.User, str] = {}
+        self._votes: dict[discord.User|discord.Member, str] = {}
 
         super().__init__()
         return
@@ -32,8 +29,47 @@ class SpotBot(commands.Cog, name="spotbot"):
             description=desc
         )
 
-        await interaction.response.send_message(embed=embed, ephemeral=self.__debug_on)
+        await interaction.response.send_message(embed=embed)
         return
+
+    async def _tally_votes(self: SpotBot) -> tuple[str, discord.Embed]:
+        msg: str = ""
+
+        songs_and_votes: dict[str, int] = {}
+        for song in self._votes.values():
+            if songs_and_votes.get(song) is None:
+                songs_and_votes[song] = 0
+
+            songs_and_votes[song] += 1
+
+        ordered_votes: list[tuple[str, int]] = list(songs_and_votes.items())
+        ordered_votes.sort(key=lambda tup: tup[1])
+
+        is_tie: bool = False
+        if len(ordered_votes) > 1:
+            first_place: tuple[str, int] = ordered_votes[0]
+            second_place: tuple[str, int] = ordered_votes[1]
+            is_tie = first_place[1] == second_place[1]
+
+            if is_tie:
+                msg = "There's a tie."
+                self._spotify.toggle_voting()
+
+        msg = f"{ordered_votes[0][0]} wins."
+        if not is_tie:
+            await self._bot.change_presence(activity=None)
+
+        desc: str = "```\n"
+        for song, votes in ordered_votes: 
+            desc += f"{votes} | {song}"
+        desc += "```"
+
+        embed = discord.Embed(
+            title="Results",
+            description=desc
+        )
+
+        return msg, embed
 
     @app_commands.command(
         name="togglevoting",
@@ -41,46 +77,16 @@ class SpotBot(commands.Cog, name="spotbot"):
     )
     async def _toggle_voting(self: SpotBot, interaction: discord.Interaction) -> None:
         self._spotify.toggle_voting()
+        msg: str = ""
         embed: Optional[discord.Embed] = None
 
-        msg: str = ""
         if self._spotify.is_voting():
             msg = "Voting has been enabled!"
             await self._bot.change_presence(activity=discord.Activity(name="Voting is open!"))
         else:
-            songs_and_votes: dict[str, int] = {}
-            for song in self._votes.values():
-                if songs_and_votes.get(song) is None:
-                    songs_and_votes[song] = 0
-                songs_and_votes[song] += 1
+            msg, embed = await self._tally_votes()
 
-            ordered_votes: list[tuple[str, int]] = list(songs_and_votes.items())
-            ordered_votes.sort(key=lambda tup: tup[1])
-
-            is_tie: bool = False
-            if len(ordered_votes) > 1:
-                first_place: tuple[str, int] = ordered_votes[0]
-                second_place: tuple[str, int] = ordered_votes[1]
-                is_tie = first_place[1] == second_place[1]
-                if is_tie:
-                    msg = "There's a tie."
-                    self._spotify.toggle_voting()
-
-            # msg = f"{} wins."
-            if not is_tie:
-                await self._bot.change_presence(activity=None)
-
-            desc: str = "```\n"
-            for song, votes in ordered_votes: 
-                desc += f"{votes} | {song}"
-            desc += "```"
-
-            embed = discord.Embed(
-                title="Results",
-                description=desc
-            )
-
-        await interaction.response.send_message(msg, embed=embed, ephemeral=self.__debug_on)
+        await interaction.response.send_message(msg, embed=embed)
         return
 
     @app_commands.command(
@@ -88,6 +94,10 @@ class SpotBot(commands.Cog, name="spotbot"):
         description="Vote for a song this week."
     )
     async def _vote(self: SpotBot, interaction: discord.Interaction) -> None:
+        if not self._spotify.is_voting():
+            await interaction.response.send_message("Voting isn't active.")
+            return
+
         options: list[discord.SelectOption] = [
             discord.SelectOption(
                 label=(f"{track[0]} - {track[1]}"[:100])
@@ -105,7 +115,6 @@ class SpotBot(commands.Cog, name="spotbot"):
         view.add_item(select)
         await interaction.response.send_message("Vote!", view=view, ephemeral=True)
         return
-
 
     # @app_commands.command(name="updateplaylist")
     # async def _update_playlist(self: SpotBot, interaction: discord.Interaction) -> None:
@@ -133,7 +142,7 @@ class SpotBot(commands.Cog, name="spotbot"):
             description=tracks_msg
         ).set_thumbnail(url=playlist_info[1])
 
-        await interaction.response.send_message(embed=embed, ephemeral=self.__debug_on)
+        await interaction.response.send_message(embed=embed)
         return
 
 
