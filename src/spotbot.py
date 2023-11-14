@@ -2,6 +2,8 @@ from __future__ import annotations
 from discord.ext import commands
 from discord import app_commands
 from os import getenv
+
+from discord.webhook.async_ import interaction_response_params
 from spotifyinteraction import SpotifyInteraction
 from typing import Optional
 import discord
@@ -20,6 +22,9 @@ class SpotBot(commands.Cog, name="spotbot"):
         description="Call out the mfs who didn't vote."
     )
     async def _who_voted(self: SpotBot, interaction: discord.Interaction) -> None:
+        if not self._spotify.is_voting():
+            await interaction.response.send_message("Voting hasn't started.")
+
         desc: str = ""
         for user in self._votes:
             desc += f"- {user.display_name}\n"
