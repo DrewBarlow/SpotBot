@@ -2,7 +2,6 @@ from __future__ import annotations
 from discord.ext import commands
 from discord import app_commands
 from os import getenv
-from spotipy.util import spotipy
 from .spotifyinteraction import SpotifyInteraction
 import discord
 
@@ -18,6 +17,7 @@ class SpotBot(commands.Cog, name="spotbot"):
     @app_commands.command(name="togglevoting")
     async def _toggle_voting(self: SpotBot, interaction: discord.Interaction) -> None:
         self._spotify.toggle_voting()
+
         msg: str = ""
         if self._spotify.is_voting():
             msg = "Voting has been enabled!"
