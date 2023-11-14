@@ -9,10 +9,17 @@ class SpotifyInteraction():
 
     def __init__(self: SpotifyInteraction) -> None:
         self._spotify: Spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
-        self.get_weekly_playlist_info()
+        self._is_voting: bool = False
 
         super().__init__()
         return
+
+    def toggle_voting(self: SpotifyInteraction) -> None:
+        self._is_voting = not self._is_voting
+        return
+
+    def is_voting(self: SpotifyInteraction) -> bool:
+        return self._is_voting
 
     def get_weekly_playlist_info(self: SpotifyInteraction) -> tuple[str, str]:
         """
