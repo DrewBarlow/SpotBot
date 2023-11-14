@@ -8,7 +8,7 @@ load_dotenv()
 TOKEN: str = str(getenv("SPOTBOT_TOKEN"))
 
 async def load_cogs(bot: Bot) -> None:
-    await bot.load_extension("cogs.spotbot")
+    await bot.load_extension("spotbot")
     return
 
 async def main() -> None:

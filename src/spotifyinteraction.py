@@ -14,6 +14,9 @@ class SpotifyInteraction():
         super().__init__()
         return
 
+    def get_spotify(self: SpotifyInteraction) -> Spotify:
+        return self._spotify
+
     def toggle_voting(self: SpotifyInteraction) -> None:
         self._is_voting = not self._is_voting
         return
@@ -53,4 +56,30 @@ class SpotifyInteraction():
                 tracks.append((track_name, artist_name, album_cover_url))
 
         return tracks
+
+    def update_weekly_playlist(self: SpotifyInteraction, new_name: str, new_image_url: str) -> None:
+        """
+        Migrates all songs from weekly to master and updates details
+        of the weekly playlist.
+        """
+        self._spotify.playlist_change_details(self._WEEKLY_URI, name=new_name)
+        # self._migrate_songs_from_weekly()
+        return
+
+    def _migrate_songs_from_weekly(self: SpotifyInteraction) -> None:
+        """
+        Removes all songs from the weekly playlist and adds them
+        to the master playlist.
+        """
+        track_uris: list[str] = []
+
+        weekly_playlist_items: Optional[dict] = self._spotify.playlist_items(self._WEEKLY_URI)
+        if weekly_playlist_items:
+            for track in weekly_playlist_items["items"]:
+                track_uris.append(track)
+
+        self._spotify.playlist_add_items(self._MENTLEGEN_URI, track_uris)
+        self._spotify.playlist_remove_all_occurrences_of_items(self._WEEKLY_URI, track_uris)
+
+        return
 
