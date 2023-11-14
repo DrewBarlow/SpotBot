@@ -93,7 +93,8 @@ class SpotBot(commands.Cog, name="spotbot"):
             if len(self._votes) > 0:
                 msg, embed = await self._tally_votes()
             else:
-                msg = "Voting has been disabled"
+                msg = "Voting has been disabled."
+                await self._bot.change_presence(activity=None)
 
         await interaction.response.send_message(msg, embed=embed)
         return
