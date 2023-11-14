@@ -2,18 +2,13 @@ from asyncio import run
 from discord import Intents
 from discord.ext.commands import Bot
 from dotenv import load_dotenv
-from os import getenv, listdir
+from os import getenv
 
 load_dotenv()
 TOKEN: str = str(getenv("SPOTBOT_TOKEN"))
 
 async def load_cogs(bot: Bot) -> None:
-    for fname in listdir("./cogs"):
-        if fname.endswith(".py"):
-            no_ext: str = fname[:-3]
-            await bot.load_extension(f"cogs.{no_ext}")
-            print(f"Loaded Cog: {no_ext}.")
-
+    await bot.load_extension("cogs.spotbot")
     return
 
 async def main() -> None:
@@ -24,6 +19,7 @@ async def main() -> None:
     @bot.event
     async def on_ready() -> None:
         print("Bot running.")
+        await bot.tree.sync()
 
     await load_cogs(bot)
     await bot.start(TOKEN)
