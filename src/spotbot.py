@@ -60,8 +60,9 @@ class SpotBot(commands.Cog, name="spotbot"):
                 msg = "There's a tie."
                 self._spotify.toggle_voting()
 
-        msg = f"{ordered_votes[0][0]} wins."
         if not is_tie:
+            msg = f"{ordered_votes[0][0]} wins."
+            self._votes = {}
             await self._bot.change_presence(activity=None)
 
         desc: str = "```\n"
