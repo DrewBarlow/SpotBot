@@ -88,9 +88,12 @@ class SpotBot(commands.Cog, name="spotbot"):
 
         if self._spotify.is_voting():
             msg = "Voting has been enabled!"
-            await self._bot.change_presence(activity=discord.Activity(name="Voting is open!"))
+            await self._bot.change_presence(activity=discord.Game(name="Voting is open!"))
         else:
-            msg, embed = await self._tally_votes()
+            if len(self._votes) > 0:
+                msg, embed = await self._tally_votes()
+            else:
+                msg = "Voting has been disabled"
 
         await interaction.response.send_message(msg, embed=embed)
         return
