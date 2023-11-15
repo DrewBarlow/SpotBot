@@ -95,6 +95,10 @@ class SpotBot(commands.Cog, name="spotbot"):
                 self._spotify.toggle_voting()
             else:
                 self._tied_songs = []
+        else:
+            self._is_tie = False
+            self._tied_songs = []
+            self._votes = {}
 
         return self._make_vote_embed(ordered_votes)
 
@@ -105,7 +109,7 @@ class SpotBot(commands.Cog, name="spotbot"):
         embed: discord.Embed = discord.Embed()
         desc: str = "```\n"
         for song, votes in ordered_votes: 
-            desc += f"{votes} | {song}"
+            desc += f"{votes} | {song}\n"
         desc += "```"
 
         if not self._is_tie:
