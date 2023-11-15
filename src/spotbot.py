@@ -93,6 +93,7 @@ class SpotBot(commands.Cog, name="spotbot"):
 
             if self._is_tie:
                 self._spotify.toggle_voting()
+                self._votes = {}
             else:
                 self._tied_songs = []
         else:
