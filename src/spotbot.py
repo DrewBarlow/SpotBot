@@ -109,10 +109,16 @@ class SpotBot(commands.Cog, name="spotbot"):
         desc += "```"
 
         if not self._is_tie:
-            embed = discord.Embed(
-                title=ordered_votes[0][0],
-                description=desc
-            )
+            for (song, artist, album_url) in self._spotify.get_tracks():
+                song_and_artist: str = f"{song} - {artist}"
+
+                if song_and_artist == ordered_votes[0][0]:
+                    embed = discord.Embed(
+                        title=ordered_votes[0][0],
+                        description=desc
+                    ).set_thumbnail(album_url)
+                    break
+
             self._votes = {}
         else:
             embed = discord.Embed(
