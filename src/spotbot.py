@@ -139,7 +139,8 @@ class SpotBot(commands.Cog, name="spotbot"):
             # should not happen
             if len(self._votes) > 0:
                 embed = self._tally_votes()
-            else:
+
+            if not self._is_tie:
                 msg = "Voting has been disabled."
                 await self._bot.change_presence(activity=discord.Game(name="Voting is closed."))
 
