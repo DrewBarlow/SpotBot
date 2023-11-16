@@ -185,7 +185,7 @@ class SpotBot(commands.Cog, name="spotbot"):
 
         async def callback(interaction: discord.Interaction) -> None:
             self._votes[interaction.user] = select.values[0]
-            await interaction.response.send_message(f"You voted for {select.values[0]}.", ephemeral=True)
+            await interaction.response.edit_message(f"You voted for {select.values[0]}.", ephemeral=True)
             return
 
         select.callback = callback
