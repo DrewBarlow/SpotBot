@@ -1,5 +1,5 @@
 from asyncio import run
-from discord import Intents
+from discord import Game, Intents
 from discord.ext.commands import Bot
 from dotenv import load_dotenv
 from os import getenv
@@ -19,6 +19,7 @@ async def main() -> None:
     @bot.event
     async def on_ready() -> None:
         print("Bot running.")
+        await bot.change_presence(activity=Game(name="Voting is closed!"))
         await bot.tree.sync()
 
     await load_cogs(bot)
