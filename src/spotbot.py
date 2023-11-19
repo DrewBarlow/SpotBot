@@ -4,6 +4,9 @@ from discord import app_commands
 from spotifyinteraction import SpotifyInteraction
 from typing import Optional
 import discord
+import base64
+import requests
+import aiohttp
 
 class SpotBot(commands.Cog, name="spotbot"):
     def __init__(self: SpotBot, bot: commands.Bot) -> None:
@@ -133,6 +136,22 @@ class SpotBot(commands.Cog, name="spotbot"):
             )
 
         return embed
+
+    async def fetch_image_url(self: SpotBot) -> bytes | None:
+        """
+        :parameter: Takes in image url from spotify playlist
+        :return: returns the base64 bytes into string format
+        """
+        image_url = self._spotify.get_weekly_playlist_info()[1]
+        async with (aiohttp.ClientSession() as session):
+            async with session.get(image_url) as response:
+                if response.status == 200:
+                    base64_encoded = base64.b64encode(await response.read())
+                    return base64_encoded
+                else:
+                    print(f"Failed to fetch image from {image_url}")
+                    return None
+                    # base64.b64encode(requests.get(image_url).content).decode('utf-8')
 
     @app_commands.command(
         name="togglevoting",
