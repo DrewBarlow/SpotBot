@@ -1,4 +1,5 @@
 from __future__ import annotations
+from aiohttp import ClientSession
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 from typing import Optional
@@ -57,13 +58,15 @@ class SpotifyInteraction():
 
         return tracks
 
-    def update_weekly_playlist(self: SpotifyInteraction, new_name: str, new_image_url: str) -> None:
+    async def update_weekly_playlist(self: SpotifyInteraction, new_name: str, new_image: str) -> None:
         """
         Migrates all songs from weekly to master and updates details
         of the weekly playlist.
         """
         self._spotify.playlist_change_details(self._WEEKLY_URI, name=new_name)
+        self._spotify.playlist_upload_cover_image(self._WEEKLY_URI, new_image)
         # self._migrate_songs_from_weekly()
+
         return
 
     def _migrate_songs_from_weekly(self: SpotifyInteraction) -> None:
