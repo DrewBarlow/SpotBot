@@ -5,7 +5,8 @@ from spotifyinteraction import SpotifyInteraction
 from typing import Optional
 import discord
 import base64
-import requests
+import certifi
+import ssl
 import aiohttp
 
 class SpotBot(commands.Cog, name="spotbot"):
@@ -14,6 +15,7 @@ class SpotBot(commands.Cog, name="spotbot"):
         self._spotify: SpotifyInteraction = SpotifyInteraction()
         self._votes: dict[discord.User|discord.Member, str] = {}
         self._is_tie: bool = False
+        self._album_url = self._spotify.get_weekly_playlist_info()[1]
         self._tied_songs: list[str] = []
 
         super().__init__()
@@ -137,19 +139,20 @@ class SpotBot(commands.Cog, name="spotbot"):
 
         return embed
 
-    async def fetch_image_url(self: SpotBot) -> bytes | None:
+    async def fetch_image_url(self) -> bytes | str | None:
         """
         :parameter: Takes in image url from spotify playlist
         :return: returns the base64 bytes into string format
         """
-        image_url = self._spotify.get_weekly_playlist_info()[1]
-        async with (aiohttp.ClientSession() as session):
-            async with session.get(image_url) as response:
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+
+        async with (aiohttp.ClientSession(trust_env=True) as session):
+            async with session.get(self._album_url, ssl_context=ssl_context) as response:
                 if response.status == 200:
                     base64_encoded = base64.b64encode(await response.read())
                     return base64_encoded
                 else:
-                    print(f"Failed to fetch image from {image_url}")
+                    print(f"Failed to fetch image from {self._album_url}")
                     return None
                     # base64.b64encode(requests.get(image_url).content).decode('utf-8')
 
